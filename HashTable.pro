@@ -4,13 +4,13 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += \
-        main.cpp \
-    hashtable.cpp \
-    ilist.cpp
+        src/main.cpp \
 
 HEADERS += \
-    hashtable.h \
-    ilist.h \
-    hashfunc.h \
-    log.h \
-    aliases.h
+    include/log.h \
+    include/aliases.h \
+    include/structures/hashfunc.h \
+    include/structures/hashtable.h \
+
+
+

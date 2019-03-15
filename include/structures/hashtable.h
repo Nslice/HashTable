@@ -10,10 +10,9 @@
 #include <list>
 
 
-#include "ilist.h"
-#include "hashfunc.h"
-#include "log.h"
-#include "aliases.h"
+#include "include/structures/hashfunc.h"
+#include "include/log.h"
+#include "include/aliases.h"
 
 
 // TODO в namespace добавить вместе с хеш функцией
@@ -56,7 +55,7 @@ HashTable<K, V, F>::HashTable(uint tableSize)
 template<typename K, typename V, typename F>
 HashTable<K, V, F>::~HashTable()
 {
-    for (int i = 0; i < table.size(); i++)
+    for (uint i = 0; i < table.size(); i++)
     {
         delete table[i];
     }

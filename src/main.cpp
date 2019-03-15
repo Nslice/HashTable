@@ -1,10 +1,9 @@
 #include <iostream>
-#include <ilist.h>
 #include <ctime>
 #include <unordered_set>
 
-#include "hashtable.h"
-#include "hashfunc.h"
+#include "include/structures/hashtable.h"
+#include "include/structures/hashfunc.h"
 
 
 using std::cout, std::endl, std::cin, std::string;
@@ -141,3 +140,39 @@ int main()
 
     return 0;
 }
+
+
+
+
+
+
+// TODO добавить лист и интерфейс
+////#ifndef ILIST_H_INCLUDED
+//#define ILIST_H_INCLUDED
+
+//#include <list>
+//#include <iostream>
+
+//template<typename T>
+//class IList
+//{
+//public:
+//    virtual ~IList(){}
+
+////    void push_back(const T& obj) = 0;
+////    void push_front(const T& obj) = 0;
+////    void pop_back() = 0;
+////    virtual void pop_front() = 0;
+//};
+
+
+//template<typename T>
+//class TempList :  public std::list<T>, public IList<T>
+//{
+//public:
+
+////    virtual ~TempList() override;
+
+//};
+
+////#endif // ILIST_H_INCLUDED

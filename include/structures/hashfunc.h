@@ -2,7 +2,7 @@
 #define HASHFUNC_H_INCLUDED
 
 #include <string>
-#include "aliases.h"
+#include "include/aliases.h"
 
 
 template<typename T>
