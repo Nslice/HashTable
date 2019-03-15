@@ -1,15 +1,32 @@
 #include <iostream>
 #include <ilist.h>
-#include "hashtable.h"
-#include <array>
 #include <ctime>
+#include <unordered_set>
 
-struct S {
+#include "hashtable.h"
+#include "hashfunc.h"
+
+
+using std::cout, std::endl, std::cin, std::string;
+using mylogger::log;
+
+
+
+
+struct Point
+{
+    int x, y;
+};
+
+struct S
+{
     std::string first_name;
     std::string last_name;
 };
 
-namespace std {
+
+namespace std
+{
 template<>
 struct hash<S>
 {
@@ -20,17 +37,59 @@ struct hash<S>
         return h1 ^ ( h2 << 1 );
     }
 };
+
+//template<>
+//struct hash<Point>
+//{
+//    uint operator()(const Point& p) const
+//    {
+
+//        uint n = static_cast<uint>(std::hash<int>()(p.x));
+//        return n;
+//    }
+//};
 }
+
+
 
 
 int main()
 {
-    //    std::function<uint (std::string)> f = [](std::string key)
-    //    {
-    //        key.length();
-    //        return 2;
-    //    };
-    //    int n = 2;
+    std::srand(static_cast<uint>(time(nullptr)));
+
+    //TODO сделать так же со своим классом
+    std::unordered_set<Point, std::function<size_t (const Point&)>> map;
+
+
+    //    Hash<string> h;
+    //    string s = "Meshuggah";
+    //    log(h(s));
+
+    //    Hash<int> h2;
+    //    log(h2(252));
+
+    //    log("std::hash ", std::hash<double>()(5.32));
+
+
+    //    Hash<Point> hd;
+    //    hd(Point());
+    //    log("my Hash ", hd(Point()));
+
+    Hash<string> ds;
+    log(ds("ssds"));
+    log(ds("ssds"));
+
+
+
+
+    //    std::hash<Point> f;
+    //    Point p;
+    //    p.x = rand();
+    //    log("checl");
+    //    log("Point ", std::hash<Point>()(p));
+
+    //    log("string ", std::hash<string>()(s));
+
 
     //    std::string str = "Meet the new boss...";
     //    std::hash<std::string> hash_fn;
@@ -38,56 +97,46 @@ int main()
     //    std::cout << str_hash << '\n';
 
 
-    //    HashTable<std::string, int> table;
-    //    table.put("Mike", 545);
-    //    table.put("Dua", 625);
-    //    table.put("Lipa", 435);
-
-    //    std::cout << table.get("Mike") << std::endl;
-    //    std::cout << table.get("Dua") << std::endl;
 
 
-    std::srand(time(nullptr));
-    log(std::to_string(rand()));
+    HashTable<string, int> table;
+    table.put("Mike", 545);
+    table.put("Dua", 625);
+    table.put("Lipa", 435);
 
-    HashTable<int, int> table(4457);
-    for (int i = 0; i < 1000000; ++i) {
-        table.put(i, i);
-    }
-
-    log("generated");
+    std::cout << table.get("Mike") << std::endl;
+    std::cout << table.get("Dua") << std::endl;
 
 
-    table.get(700434);
-    log("requested");
-
-    std::vector<int> vec(1000000);
-    for (int i = 0; i < 1000000; ++i) {
-        vec[i] = i;
-    }
-
-    log("generated_vector");
-    for (int i = 0; i < 1000000; ++i) {
-        if (vec[i] = 700434)
-        {
-            log("YEAH found");
-            break;
-        }
-    }
-
-
-
-
-
-    //    using namespace std;
-    //    vector<list<int>*> v(5, nullptr);
-    //    cout << v.size() << endl;
-    //    for (int i = 0; i < v.size(); ++i) {
-    //        v[i] = new list<int>{43,4,34,3};
+    //    HashTable<int, int> table(4457);
+    //    for (int i = 0; i < 1000000; ++i) {
+    //        table.put(i, i);
     //    }
 
-    //    for (int i : *v[2])
-    //        cout << i << endl;
+
+    //    log("generated");
+
+
+    //    table.get(700434);
+    //    log("requested");
+
+    //    std::vector<int> vec(1000000);
+    //    for (int i = 0; i < 1000000; ++i) {
+    //        vec[i] = i;
+    //    }
+
+    //    log("generated_vector");
+    //    for (int i = 0; i < 1000000; ++i) {
+    //        if (vec[i] = 700434)
+    //        {
+    //            log("YEAH found");
+    //            break;
+    //        }
+    //    }
+
+
+
+
 
 
     return 0;

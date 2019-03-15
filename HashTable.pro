@@ -11,4 +11,6 @@ SOURCES += \
 HEADERS += \
     hashtable.h \
     ilist.h \
-    hashfunc.h
+    hashfunc.h \
+    log.h \
+    aliases.h

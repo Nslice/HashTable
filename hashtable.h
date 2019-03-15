@@ -2,26 +2,25 @@
 #define HASHTABLE_H_INCLUDED
 
 
-//#include <cstdio>
+#include <typeinfo>
 #include <stdexcept>
 #include <utility>
 #include <vector>
-#include "ilist.h"
-#include "hashfunc.h"
 #include <functional>
 #include <list>
 
-typedef unsigned int uint;
+
+#include "ilist.h"
+#include "hashfunc.h"
+#include "log.h"
+#include "aliases.h"
 
 
-inline void log(const std::string& str)
-{
-    std::cout << "log: " << str << std::endl;
-}
+// TODO в namespace добавить вместе с хеш функцией
 
 
-
-template<typename K, typename V, typename F = std::hash<K>>
+// TODO в 3 параметр можно передавать лямбды через std::function
+template<typename K, typename V, typename F = Hash<K>>
 class HashTable
 {
 private:
@@ -35,8 +34,6 @@ private:
     HashTable(const HashTable&) = delete;
     HashTable& operator=(const HashTable&) = delete;
 
-    void operator()() =delete;
-
 public:
     explicit HashTable(uint tableSize = 117);
     ~HashTable();
@@ -49,9 +46,8 @@ public:
 
 template<typename K, typename V, typename F>
 HashTable<K, V, F>::HashTable(uint tableSize)
-    : table(tableSize,nullptr), getHashCode()
+    : table(tableSize, nullptr), getHashCode()
 {
-    std::cout << "YEEAH constructor\n";
     this->tableSize = tableSize;
     items = 0;
 }
@@ -60,14 +56,10 @@ HashTable<K, V, F>::HashTable(uint tableSize)
 template<typename K, typename V, typename F>
 HashTable<K, V, F>::~HashTable()
 {
-    std::cout << "YEE\n";
     for (int i = 0; i < table.size(); i++)
     {
-        // TODO обязательно это???
-        if (table[i] != nullptr)
-            delete table[i];
+        delete table[i];
     }
-
 }
 
 
@@ -92,7 +84,7 @@ V HashTable<K, V, F>::put(K key, V value)
             if (pair.first == key)
             {
                 pair.second = value;
-//                items++;
+                //                items++;
                 return value;
             }
         }
@@ -119,7 +111,7 @@ V HashTable<K, V, F>::get(K key) const
                 return pair.second;
         }
     }
-    // TODO посмотреть как в других классах (языках) с этим справляются
+    // TODO надо возвращать итератор
     throw std::invalid_argument("key not exsits");
 }
 
