@@ -1,21 +1,21 @@
 #ifndef HASHTABLE_H_INCLUDED
 #define HASHTABLE_H_INCLUDED
 
-
-#include <typeinfo>
 #include <stdexcept>
+#include <algorithm>
 #include <utility>
 #include <vector>
-#include <functional>
 #include <list>
 
-
-#include "include/structures/hashfunc.h"
 #include "include/log.h"
 #include "include/aliases.h"
+#include "include/structures/hashfunc.h"
 
 
-// TODO в namespace добавить вместе с хеш функцией
+
+namespace slice {
+
+using mylogger::log;
 
 
 // TODO в 3 параметр можно передавать лямбды через std::function
@@ -23,10 +23,10 @@ template<typename K, typename V, typename F = Hash<K>>
 class HashTable
 {
 private:
+    const F& getHashCode;
     std::vector<std::list<std::pair<K, V>>*> table;
     // TODO поле убрать
     uint tableSize;
-    F getHashCode;
     uint items;
 
 
@@ -34,22 +34,27 @@ private:
     HashTable& operator=(const HashTable&) = delete;
 
 public:
-    explicit HashTable(uint tableSize = 117);
+    explicit HashTable(uint tableSize = 117, const F& hasher = F());
     ~HashTable();
 
-    V put(K key, V value);
-    V get(K key) const;
+    const V& put(const K& key, const V& value);
+    V& get(const K& key) const;
+
+    void rehash();
 };
 
 
 
+
+
 template<typename K, typename V, typename F>
-HashTable<K, V, F>::HashTable(uint tableSize)
-    : table(tableSize, nullptr), getHashCode()
+HashTable<K, V, F>::HashTable(uint tableSize, const F& hasher)
+    : getHashCode(hasher), table(tableSize, nullptr)
 {
     this->tableSize = tableSize;
     items = 0;
 }
+
 
 
 template<typename K, typename V, typename F>
@@ -62,46 +67,48 @@ HashTable<K, V, F>::~HashTable()
 }
 
 
+
 template<typename K, typename V, typename F>
-V HashTable<K, V, F>::put(K key, V value)
+const V& HashTable<K, V, F>::put(const K& key, const V& value)
 {
-    uint hash = getHashCode(key);
-    hash %= tableSize;
-    if (table[hash] == nullptr)
+    // TODO пересмотреть коэффициент
+    if (items > tableSize * 2)
+        rehash();
+
+    uint hashIndex = getHashCode(key, tableSize);
+    auto* bucket = table[hashIndex];
+
+    if (bucket == nullptr)
     {
-        auto* list = new std::list<std::pair<K, V>>();
-        list->push_back(std::pair<K, V>(key, value));
-        table[hash] = list;
-        items++;
+        bucket = new std::list<std::pair<K, V>>();
+        bucket->emplace_back(key, value);
+        table[hashIndex] = bucket;
     }
     else
     {
-        // TODO переписать
-        auto* list = table[hash];
-        for (auto pair : *list)
+        auto iterator = std::find_if(bucket->begin(), bucket->end(), [&key](const std::pair<K, V>& pr) {
+            return pr.first == key;
+        });
+
+        if (iterator != bucket->end())
         {
-            if (pair.first == key)
-            {
-                pair.second = value;
-                //                items++;
-                return value;
-            }
+            iterator->second = value;
+            return value;
         }
-        list->push_back(std::pair<K, V>(key, value));
-        items++;
+
+        bucket->emplace_back(key, value);
     }
 
-    // TODO хз зачем возвращаю, делаю по примеру HashMap из JDK
-    // посмотреть в документации
+    items++;
     return value;
 }
 
 
+
 template<typename K, typename V, typename F>
-V HashTable<K, V, F>::get(K key) const
+V& HashTable<K, V, F>::get(const K& key) const
 {
-    uint hash = getHashCode(key);
-    hash %= tableSize;
+    uint hash = getHashCode(key, tableSize);
     if (table[hash] != nullptr)
     {
         for (std::pair<K,V> pair : *(table[hash]))
@@ -114,6 +121,21 @@ V HashTable<K, V, F>::get(K key) const
     throw std::invalid_argument("key not exsits");
 }
 
+
+
+template<typename K, typename V, typename F>
+void HashTable<K, V, F>::rehash()
+{
+    uint newTableSize = tableSize * 2;
+    for (int i = newTableSize; i * i; i++) {
+
+    }
+
+}
+
+
+
+} // end of namespace "slice"
 
 
 #endif // HASHTABLE_H_INCLUDED
