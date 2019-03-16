@@ -5,11 +5,14 @@
 #include "include/aliases.h"
 
 
+namespace slice {
+
+
 template<typename T>
 struct Hash final
 {
     Hash() = delete;
-    uint operator()(const T& key) const;
+    uint operator()(const T& key, uint tableSize) const;
 };
 
 
@@ -19,13 +22,13 @@ template<>
 struct Hash<std::string>
 {
     // TODO арифм. переполнение исправить, есть вариант с помощью XOR, SHL, SHR.
-    uint operator()(const std::string& key) const
+    uint operator()(const std::string& key, uint tableSize) const
     {
         uint _hash = 0;
         uint a = 127;
         for (size_t i = 0, length = key.length(); i < length; ++i)
         {
-            _hash = (a * _hash + static_cast<uint>(key[i]));
+            _hash = (a * _hash + static_cast<uint>(key[i])) % tableSize;
         }
         return _hash;
     }
@@ -36,9 +39,9 @@ struct Hash<std::string>
 template<>
 struct Hash<int>
 {
-    uint operator()(int key) const
+    uint operator()(int key, uint tableSize) const
     {
-        return static_cast<uint>(key);
+        return static_cast<uint>(key) % tableSize;
     }
 };
 
@@ -47,14 +50,14 @@ struct Hash<int>
 template<>
 struct Hash<double>
 {
-    ulong operator()(double key) const
+    ulong operator()(double key, uint tableSize) const
     {
         data.input = key;
-        return (data.output >> shift) | (data.output << shift);
+        return ((data.output >> SHIFT) | (data.output << SHIFT)) % tableSize;
     }
 
 private:
-    const short shift = sizeof(double) * 8 / 2;
+    static const short SHIFT = sizeof(double) * 8 / 2;
 
     mutable union
     {
@@ -68,14 +71,14 @@ private:
 template<>
 struct Hash<float>
 {
-    uint operator()(float key) const
+    uint operator()(float key, uint tableSize) const
     {
         data.input = key;
-        return (data.output >> shift) | (data.output << shift);
+        return ((data.output >> SHIFT) | (data.output << SHIFT)) % tableSize;
     }
 
 private:
-    const short shift = sizeof(float) * 8 / 2;
+    static const short SHIFT = sizeof(float) * 8 / 2;
 
     mutable union
     {
@@ -84,6 +87,7 @@ private:
     } data;
 };
 
+} // end of namespace "slice"
 
 
 #endif // HASHFUNC_H_INCLUDED
