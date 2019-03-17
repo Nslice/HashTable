@@ -19,14 +19,6 @@ using mylogger::log;
 
 
 
-struct PrimeNumberHashPolicy
-{
-    static uint nextSizeOver(uint size);
-};
-
-
-
-
 // TODO в 3 параметр можно передавать лямбды через std::function
 template<typename K, typename V, typename F = Hash<K>>
 class HashTable
@@ -46,9 +38,16 @@ public:
     explicit HashTable(uint tableSize = 127, const F& hasher = F());
     ~HashTable();
 
-    const V& put(const K& key, const V& value);
+    void put(const K& key, const V& value);
     V& get(const K& key) const;
-    void rehash();
+
+
+
+    void rehash(); // TODO потом перенести в private
+
+private:
+    static uint nextSizeOver(uint size);
+    bool _put(const std::pair<K, V>& pair, std::vector<std::list<std::pair<K, V>>*>& tmp);
 };
 
 
@@ -77,38 +76,14 @@ HashTable<K, V, F>::~HashTable()
 
 
 template<typename K, typename V, typename F>
-const V& HashTable<K, V, F>::put(const K& key, const V& value)
+void HashTable<K, V, F>::put(const K& key, const V& value)
 {
     // TODO пересмотреть коэффициент
     //    if (items / tableSize >= 2.5)
     //    rehash();
 
-    uint hashIndex = getHashCode(key, tableSize);
-    auto* bucket = table[hashIndex];
-
-    if (bucket == nullptr)
-    {
-        bucket = new std::list<std::pair<K, V>>();
-        bucket->emplace_back(key, value);
-        table[hashIndex] = bucket;
-    }
-    else
-    {
-        auto iterator = std::find_if(bucket->begin(), bucket->end(), [&key](const std::pair<K, V>& pr) {
-            return pr.first == key;
-        });
-
-        if (iterator != bucket->end())
-        {
-            iterator->second = value;
-            return value;
-        }
-
-        bucket->emplace_back(key, value);
-    }
-
-    items++;
-    return value;
+    if (_put(std::make_pair(key, value), table))
+        items++;
 }
 
 
@@ -134,40 +109,18 @@ V& HashTable<K, V, F>::get(const K& key) const
 template<typename K, typename V, typename F>
 void HashTable<K, V, F>::rehash()
 {
-    tableSize = PrimeNumberHashPolicy::nextSizeOver(tableSize);
+    tableSize = nextSizeOver(tableSize);
     decltype(table) newTable(tableSize, nullptr);
+    items = 0;
 
 
-    std::for_each(table.begin(), table.end(), [&](const std::list<std::pair<K, V>>* list)
+    std::for_each(table.cbegin(), table.cend(), [&](const std::list<std::pair<K, V>>* list)
     {
         if (list == nullptr) return;
-        std::for_each(list->begin(), list->end(), [&](const std::pair<K, V>& pair)
+        std::for_each(list->cbegin(), list->cend(), [&](const std::pair<K, V>& pair)
         {
-            // TODO этот блок повторяет put(key, value), разбросать как-нибудь по методам
-            uint hashIndex = getHashCode(pair.first, tableSize);
-            auto* bucket = newTable[hashIndex];
-
-            if (bucket == nullptr)
-            {
-                bucket = new std::list<std::pair<K, V>>();
-                bucket->emplace_back(pair.first, pair.second);
-                newTable[hashIndex] = bucket;
-            }
-            else
-            {
-                auto iterator = std::find_if(bucket->begin(), bucket->end(), [&pair](const std::pair<K, V>& p) {
-                    return p.first == pair.first;
-                });
-
-                if (iterator != bucket->end())
-                {
-                    iterator->second = pair.second;
-                    return;
-                }
-
-                bucket->emplace_back(pair);
-            }
-            return;
+            if (_put(pair, newTable))
+                items++;
         });
 
     });
@@ -180,12 +133,12 @@ void HashTable<K, V, F>::rehash()
 
     //копируются только указатели на списки
     table = std::vector(newTable);
-    log("ok");
 }
 
 
 
-uint PrimeNumberHashPolicy::nextSizeOver(uint size)
+template<typename K, typename V, typename F>
+uint HashTable<K, V, F>::nextSizeOver(uint size)
 {
     static constexpr uint prime_list[] =
     {
@@ -208,6 +161,38 @@ uint PrimeNumberHashPolicy::nextSizeOver(uint size)
     const uint* found = std::upper_bound(std::begin(prime_list), std::end(prime_list) - 1, size);
 
     return *found;
+}
+
+
+
+
+template<typename K, typename V, typename F>
+bool HashTable<K, V, F>::_put(const std::pair<K, V>& pair, std::vector<std::list<std::pair<K, V>>*>& tmp)
+{
+    uint hashIndex = getHashCode(pair.first, tableSize);
+    auto* bucket = tmp[hashIndex];
+
+    if (bucket == nullptr)
+    {
+        bucket = new std::list<std::pair<K, V>>();
+        bucket->emplace_back(pair.first, pair.second);
+        tmp[hashIndex] = bucket;
+    }
+    else
+    {
+        auto iterator = std::find_if(bucket->begin(), bucket->end(), [&pair](const std::pair<K, V>& p) {
+            return p.first == pair.first;
+        });
+        // если такой ключ есть
+        if (iterator != bucket->end())
+        {
+            iterator->second = pair.second;
+            return false;
+        }
+
+        bucket->emplace_back(pair);
+    }
+    return true;
 }
 
 
