@@ -1,14 +1,20 @@
 #include <iostream>
 #include <ctime>
+#include <typeinfo>
 #include <unordered_set>
+#include <unordered_map>
+#include <functional>
+#include <iterator>
+#include <vector>
+
 
 #include "include/structures/hashtable.h"
 #include "include/structures/hashfunc.h"
+#include "include/log.h"
 
 
-using std::cout, std::endl, std::cin, std::string;
-using mylogger::log;
-
+using std::cout, std::endl, std::cin, std::string, std::vector;
+using namespace slice;
 
 
 
@@ -17,38 +23,24 @@ struct Point
     int x, y;
 };
 
-struct S
-{
-    std::string first_name;
-    std::string last_name;
-};
 
 
-namespace std
+// TODO алгоритм решето Эратосфена
+void separator(vector<uint>& vec)
 {
-template<>
-struct hash<S>
-{
-    size_t operator()(const S &s) const
+    for (uint j = 0; j < vec.size(); j++)
     {
-        size_t h1 = std::hash<std::string>()(s.first_name);
-        size_t h2 = std::hash<std::string>()(s.last_name);
-        return h1 ^ ( h2 << 1 );
+        if (vec[j] == 0)
+            continue;
+        uint p = vec[j];
+        for (uint i = 2, n = i * p; n < vec.size(); i++)
+        {
+            n = i * p;
+            vec[n - 1] = 0;
+        }
     }
-};
 
-//template<>
-//struct hash<Point>
-//{
-//    uint operator()(const Point& p) const
-//    {
-
-//        uint n = static_cast<uint>(std::hash<int>()(p.x));
-//        return n;
-//    }
-//};
 }
-
 
 
 
@@ -56,55 +48,117 @@ int main()
 {
     std::srand(static_cast<uint>(time(nullptr)));
 
-    //TODO сделать так же со своим классом
-    std::unordered_set<Point, std::function<size_t (const Point&)>> map;
+    //    vector<uint> series;
+    //    series.reserve(120);
+
+    //    log(series.size());
+    //    log(series.capacity());
+
+    //    series.push_back(0);
+    //    for (uint i = 2; i <= 120; i++)
+    //    {
+    //        series.push_back(i);
+    //    }
+
+    //    log("size_t" ,sizeof(size_t));
 
 
-    //    Hash<string> h;
-    //    string s = "Meshuggah";
-    //    log(h(s));
+    //    log("size ", series.size());
+    //    log("last ", series.back());
 
-    //    Hash<int> h2;
-    //    log(h2(252));
-
-    //    log("std::hash ", std::hash<double>()(5.32));
-
-
-    //    Hash<Point> hd;
-    //    hd(Point());
-    //    log("my Hash ", hd(Point()));
-
-    Hash<string> ds;
-    log(ds("ssds"));
-    log(ds("ssds"));
-
-
-
-
-    //    std::hash<Point> f;
-    //    Point p;
-    //    p.x = rand();
-    //    log("checl");
-    //    log("Point ", std::hash<Point>()(p));
-
-    //    log("string ", std::hash<string>()(s));
-
-
-    //    std::string str = "Meet the new boss...";
-    //    std::hash<std::string> hash_fn;
-    //    size_t str_hash = hash_fn(str);
-    //    std::cout << str_hash << '\n';
+    //    separator(series);
 
 
 
 
-    HashTable<string, int> table;
-    table.put("Mike", 545);
-    table.put("Dua", 625);
-    table.put("Lipa", 435);
+    HashTable<string, int> table(11);
 
-    std::cout << table.get("Mike") << std::endl;
-    std::cout << table.get("Dua") << std::endl;
+
+    try {
+        table.put("Mike", 545);
+        table.put("Dua", 625);
+        table.put("Lipa", 435);
+        table.put("Lipa", 555);
+        table.rehash();
+        std::cout << table.get("Mike") << std::endl;
+        std::cout << table.get("Dua") << std::endl;
+    }
+    catch (std::exception& e) {
+        log(e.what());
+        std::cerr << e.what() << '\n';
+        const boost::stacktrace::stacktrace* st = boost::get_error_info<traced>(e);
+        if (st)
+            std::cerr << *st << '\n';
+    }
+
+
+
+
+
+    int ar[] = {2,3,214,23,4,234, 2};
+    std::for_each(std::begin(ar), std::end(ar), [](int n)
+    {
+       log(_(n));
+    });
+
+
+
+
+
+    //    //    std::function<uint (const std::string&, uint)> f  = [](const std::string& str, uint m) { return str.length() % m; };
+    //    //    slice::HashTable<string, int, std::function<uint (const std::string&, uint)>> dd(137, f);
+    //    //    dd.put("Tool", 10000);
+
+
+    //    std::list<pair<string, string>> lst;
+    //    lst.push_back(pair<string, string>("Dua Lipa", "Blow Your Mind"));
+    //    lst.push_back(pair<string, string>("Taylor", "Style"));
+    //    lst.push_back(pair<string, string>("Tool", "Right in Two"));
+    //    lst.push_back(pair<string, string>("Childish", "Gambino"));
+
+    //    string key = "Taylsr";
+    //    auto iter = std::find_if(lst.begin(), lst.end(), [&key](const pair<string, string>& pr)
+    //    {
+    //        return pr.first == key;
+    //    });
+
+
+
+    //    log(typeid(iter).name());
+    //    if (iter != lst.end())
+    //    {
+    //        log(iter->first);
+    //        log(iter->second);
+    //    }
+    //    else {
+    //        log("fuckj");
+    //    }
+
+
+
+
+
+    //1 1 2 3 5 8 13 21
+
+    // 1 1 10 11 101 1000 1101  10101
+
+    //  (1 ^ 1)    (1 & 1)
+
+    /*
+     * int add(int i, int j)
+{
+    int uncommonBits = i ^ j;
+    int commonBits = i & j;
+
+    if (commonBits == 0)
+        return uncommonBits;
+
+    return add(uncommonBits, commonBits << 1);
+     */
+
+
+
+
 
 
     //    HashTable<int, int> table(4457);
@@ -132,10 +186,6 @@ int main()
     //            break;
     //        }
     //    }
-
-
-
-
 
 
     return 0;

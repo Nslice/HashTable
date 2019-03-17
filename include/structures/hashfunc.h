@@ -19,7 +19,7 @@ struct Hash final
 
 // TODO у Седжвика посмортеть как реализовать
 template<>
-struct Hash<std::string>
+struct Hash<std::string> final
 {
     // TODO арифм. переполнение исправить, есть вариант с помощью XOR, SHL, SHR.
     uint operator()(const std::string& key, uint tableSize) const
@@ -37,7 +37,7 @@ struct Hash<std::string>
 
 
 template<>
-struct Hash<int>
+struct Hash<int> final
 {
     uint operator()(int key, uint tableSize) const
     {
@@ -48,7 +48,7 @@ struct Hash<int>
 
 
 template<>
-struct Hash<double>
+struct Hash<double> final
 {
     ulong operator()(double key, uint tableSize) const
     {
@@ -59,17 +59,17 @@ struct Hash<double>
 private:
     static const short SHIFT = sizeof(double) * 8 / 2;
 
-    mutable union
+    union
     {
         double input;
         ulong output;
-    } data;
+    } mutable data;
 };
 
 
 
 template<>
-struct Hash<float>
+struct Hash<float> final
 {
     uint operator()(float key, uint tableSize) const
     {
@@ -80,11 +80,11 @@ struct Hash<float>
 private:
     static const short SHIFT = sizeof(float) * 8 / 2;
 
-    mutable union
+    union
     {
         float input;
         uint output;
-    } data;
+    } mutable data;
 };
 
 } // end of namespace "slice"

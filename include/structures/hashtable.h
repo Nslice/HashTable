@@ -15,8 +15,6 @@
 
 namespace slice {
 
-using mylogger::log;
-
 
 
 // TODO в 3 параметр можно передавать лямбды через std::function
