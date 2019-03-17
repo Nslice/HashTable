@@ -119,7 +119,7 @@ V& HashTable<K, V, F>::get(const K& key) const
     uint hash = getHashCode(key, tableSize);
     if (table[hash] != nullptr)
     {
-        for (std::pair<K,V> pair : *(table[hash]))
+        for (std::pair<K,V>& pair : *(table[hash]))
         {
             if (pair.first == key)
                 return pair.second;
