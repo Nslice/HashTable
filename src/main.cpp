@@ -6,7 +6,7 @@
 #include <functional>
 #include <iterator>
 #include <vector>
-
+#include <map>
 
 #include "include/structures/hashtable.h"
 #include "include/structures/hashfunc.h"
@@ -70,28 +70,35 @@ int main()
 
 
 
+    std::list<int> list;
+    cout << list.size() << endl;
 
-    HashTable<string, int> table(11);
+//    list.resize(5);
+    cout << list.size() << endl;
 
+    std::list<int>::iterator iter = list.begin();
+
+    HashTable<string, string> table(11);
 
     try {
-        table.put("Mike", 545);
-        table.put("Dua", 625);
-        table.put("Lipa", 435);
-        table.put("Lipa", 555);
+        table.put("Mike", "Pike");
+        table.put("Dua", "Lipa");
+        table.put("Meynard", "Keenan");
+        log(table.get("Meynard"));
+        table.put("Meynard", "James");
         table.rehash();
-        std::cout << table.get("Mike") << std::endl;
+        log(table.get("Meynard"));
+
+        std::cout << table.get("sMike") << std::endl;
         std::cout << table.get("Dua") << std::endl;
     }
     catch (std::exception& e) {
         log(e.what());
-        std::cerr << e.what() << '\n';
-        const boost::stacktrace::stacktrace* st = boost::get_error_info<traced>(e);
-        if (st)
-            std::cerr << *st << '\n';
+        log("ALARM");
     }
 
-
+   auto p = table.begin();
+  ++p;
 
 
 
