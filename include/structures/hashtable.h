@@ -22,7 +22,6 @@ template<typename K, typename V, typename F = Hash<K>>
 class HashTable
 {
     typedef std::pair<K, V> node;
-    class Iterator;
 
 private:
     const F& getHashCode;
@@ -35,28 +34,24 @@ private:
     HashTable& operator=(const HashTable&) = delete;
 
 public:
+    class Iterator;
+
+
     explicit HashTable(uint tableSize = 127, const F& hasher = F());
     ~HashTable();
 
+    ulong size() const { return items; }
+
     void put(const K& key, const V& value);
     V& get(const K& key) const;
-
-
-
-
-    void rehash(); // TODO потом перенести в private
-
 
     Iterator begin();
     Iterator end();
 
 private:
+    void rehash();
     static uint nextSizeOver(uint size);
     bool _put(const node& pair, std::vector<std::list<node>*>& t);
-
-
-
-
 };
 
 
@@ -67,28 +62,30 @@ template<typename K, typename V, typename F>
 class HashTable<K, V, F>::Iterator
         : public std::iterator<std::input_iterator_tag, node, uint, node*, node>
 {
-    //        friend class HashTable;
+    friend HashTable;
 private:
-    uint index;
-    std::vector<std::list<node>*>* table;
+    typename std::vector<std::list<node>*>::iterator itTable;
+    typename std::vector<std::list<node>*>::iterator itEnd;
     typename std::list<node>::iterator current;
 
 
+    Iterator(decltype(itEnd) end);
+    Iterator(decltype(itTable) it1, decltype(itEnd) it2);
+
 public:
-    Iterator() {}
-    Iterator(std::vector<std::list<node>*>* table, uint index)
-    {
-        this->table = table;
-        this->index = index;
-        this->current = (*table)[index]->begin();
-    }
+    Iterator();
+    Iterator(const Iterator& other);
 
 
-    // TODO еще  один const после типа зачем
+    node& operator*() const;
+    typename std::list<node>::iterator operator->() const;
+
+
+    Iterator& operator++(void);
+    Iterator& operator++(int);
+
     bool operator==(const Iterator& other) const;
     bool operator!=(const Iterator& other) const;
-    Iterator& operator++(void);
-    node& operator*() const;
 
 };
 
@@ -103,7 +100,6 @@ template<typename K, typename V, typename F>
 HashTable<K, V, F>::HashTable(uint tableSize, const F& hasher)
     : getHashCode(hasher), table(tableSize, nullptr)
 {
-    // TODO мб тут выделять память под все списки
     this->tableSize = tableSize;
     items = 0;
 }
@@ -113,7 +109,7 @@ HashTable<K, V, F>::HashTable(uint tableSize, const F& hasher)
 template<typename K, typename V, typename F>
 HashTable<K, V, F>::~HashTable()
 {
-    for(auto* ptr : table)
+    for(std::list<node>* ptr : table)
     {
         delete ptr;
     }
@@ -127,8 +123,6 @@ void HashTable<K, V, F>::put(const K& key, const V& value)
     // TODO пересмотреть коэффициент
     //    if (items / tableSize >= 2.5)
     //    rehash();
-
-
     if (_put(std::make_pair(key, value), table))
         items++;
 }
@@ -147,12 +141,40 @@ V& HashTable<K, V, F>::get(const K& key) const
                 return pair.second;
         }
     }
-    // TODO надо возвращать итератор
+
     throw std::invalid_argument("key not exsits");
 }
 
 
+template<typename K, typename V, typename F>
+typename HashTable<K, V, F>::Iterator
+HashTable<K, V, F>::begin()
+{
+    typename std::vector<std::list<node>*>::iterator it = table.begin();
+    for ( ; it != table.end(); ++it)
+    {
+        if (*it != nullptr)
+        {
+            uint index = getHashCode((*it)->front().first, tableSize);
+            return Iterator(it, table.end());
+        }
+    }
+    return end();
+}
 
+
+
+template<typename K, typename V, typename F>
+typename HashTable<K, V, F>::Iterator
+HashTable<K, V, F>::end()
+{
+    return Iterator(table.end());
+}
+
+
+
+
+//-------------------PRIVATE---------------------------------
 template<typename K, typename V, typename F>
 void HashTable<K, V, F>::rehash()
 {
@@ -170,39 +192,12 @@ void HashTable<K, V, F>::rehash()
         });
     });
 
-
     for(auto* ptr : table)
     {
         delete ptr;
     }
-
     //копируются только указатели на списки
     table = std::vector(newTable);
-}
-
-
-
-
-template<typename K, typename V, typename F>
-typename HashTable<K, V, F>::Iterator HashTable<K, V, F>::begin()
-{
-    for (auto* list : table)
-    {
-        if (list != nullptr)
-        {
-            auto n = getHashCode(list->front().first, tableSize);
-            return Iterator(&table, n);
-        }
-    }
-    return Iterator();
-}
-
-
-
-template<typename K, typename V, typename F>
-typename HashTable<K, V, F>::Iterator HashTable<K, V, F>::end()
-{
-
 }
 
 
@@ -227,7 +222,6 @@ uint HashTable<K, V, F>::nextSizeOver(uint size)
         842879579, 1061961721, 1337987929, 1685759167, 2123923447,
         2675975881, 3371518343, 4247846927
     };
-
     const uint* found = std::upper_bound(std::begin(prime_list), std::end(prime_list) - 1, size);
     return *found;
 }
@@ -270,81 +264,130 @@ bool HashTable<K, V, F>::_put(const node& pair, std::vector<std::list<node>*>& t
 
 
 
-//-----------------------Iterator----------------------------------
 
-//template<typename K, typename V, typename F>
-//HashTable<K, V, F>::Iterator::Iterator()
-//{
+//-----------------------Iterator-----------------------------------------
 
-//}
+template <typename K, typename V, typename F>
+HashTable<K, V, F>::Iterator::
+Iterator()
+{
+
+}
 
 
 
-//template<typename K, typename V, typename F>
-//HashTable<K, V, F>::Iterator::Iterator(uint index,
-//    typename std::list<node>::iterator current,
-//    typename std::list<node>::iterator end)
-//{
-//    this->index;
-//    this->current = current;
-//    this->end = end;
-//}
-
+template <typename K, typename V, typename F>
+HashTable<K, V, F>::Iterator::
+Iterator(const Iterator& other)
+{
+    this->index = other.index;
+    this->itTable = other.itTable;
+    this->current = other.current;
+}
 
 
 
 template<typename K, typename V, typename F>
-typename HashTable<K, V, F>::Iterator& HashTable<K, V, F>::Iterator::operator++(void)
+HashTable<K, V, F>::Iterator::
+Iterator(decltype(itEnd) end)
 {
-    current++;
-    if (current == (*table)[index]->end())
-    {
+    this->itTable = end;
+    this->itEnd = end;
+}
 
+
+
+template<typename K, typename V, typename F>
+HashTable<K, V, F>::Iterator::
+Iterator(decltype(itTable) it1, decltype(itEnd) it2)
+{
+    this->itTable = it1;
+    this->itEnd = it2;
+    this->current = (*itTable)->begin();
+}
+
+
+
+template<typename K, typename V, typename F>
+typename HashTable<K, V, F>::node&
+HashTable<K, V, F>::Iterator::operator*() const
+{
+    return *current;
+}
+
+
+
+template<typename K, typename V, typename F>
+typename std::list<typename HashTable<K, V, F>::node>::iterator
+HashTable<K, V, F>::Iterator::operator->() const
+{
+    return current;
+}
+
+
+
+template<typename K, typename V, typename F>
+typename HashTable<K, V, F>::Iterator&
+HashTable<K, V, F>::Iterator::operator++(void)
+{
+    if (++current == (*itTable)->end())
+    {
+        while (true)
+        {
+            ++itTable;
+            if (itTable == itEnd)
+                break;
+
+            if (*itTable != nullptr)
+            {
+                current = (*itTable)->begin();
+                break;
+            }
+        }
     }
-    node chek = *current;
-    log("ds");
     return *this;
 }
 
 
 
+template<typename K, typename V, typename F>
+typename HashTable<K, V, F>::Iterator&
+HashTable<K, V, F>::Iterator::operator++(int)
+{
+    Iterator tmp(*this);
+    if (++current == (*itTable)->end())
+    {
+        while (true)
+        {
+            ++itTable;
+            if (itTable == itEnd)
+                break;
+
+            if (*itTable != nullptr)
+            {
+                current = (*itTable)->begin();
+                break;
+            }
+        }
+    }
+    return tmp;
+}
 
 
-//template<typename K, typename V, typename F>
-//typename HashTable<K, V, F>::Iterator HashTable<K, V, F>::begin()
-//{
-//    Iterator iter;
-//    for (auto* list : table)
-//    {
-//        if (list != nullptr)
-//        {
 
-//            Iterator iter(&list->front(), getHashCode(&list->front().first(), list->begin()));
-
-//        }
-
-//    }
-//    return iter;
-//}
+template<typename K, typename V, typename F>
+bool HashTable<K, V, F>::Iterator::operator==(const Iterator& other) const
+{
+    return this->itTable = other.itTable;
+}
 
 
 
-//template<typename K, typename V, typename F>
-//typename HashTable<K, V, F>::Iterator HashTable<K, V, F>::end()
-//{
-//    Iterator iter;
-
-//    for (auto* list : table)
-//    {
-//        // TODO тут нужен последний список
-//        if (list != nullptr)
-//        {
-//            Iterator iter(&list->end());
-//        }
-
-//    }
-//    return iter;
-//}
+template<typename K, typename V, typename F>
+bool HashTable<K, V, F>::Iterator::operator!=(const Iterator& other) const
+{
+    return this->itTable != other.itTable;
+}
 
 
 
