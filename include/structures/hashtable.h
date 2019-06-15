@@ -17,15 +17,16 @@
 namespace slice {
 
 
-// TODO в 3 параметр можно передавать лямбды через std::function
+// В 3 параметр можно передавать лямбды через std::function.
 template<typename K, typename V, typename F = Hash<K>>
 class HashTable
 {
     typedef std::pair<K, V> node;
+    typedef std::vector<std::list<node>*> Table;
 
 private:
     const F& getHashCode;
-    std::vector<std::list<node>*> table;
+    Table mTable;
     uint tableSize;
     ulong items;
 
@@ -41,9 +42,15 @@ public:
     ~HashTable();
 
     ulong size() const { return items; }
+    bool isEmpty() const { return items == 0; }
+
+    bool containsKey(const K& key) const;
 
     void put(const K& key, const V& value);
     V& get(const K& key) const;
+    bool remove(const K& key);
+    void clear();
+
 
     Iterator begin();
     Iterator end();
@@ -51,7 +58,7 @@ public:
 private:
     void rehash();
     static uint nextSizeOver(uint size);
-    bool _put(const node& pair, std::vector<std::list<node>*>& t);
+    bool _put(const node& pair, Table& t);
 };
 
 
@@ -64,8 +71,8 @@ class HashTable<K, V, F>::Iterator
 {
     friend HashTable;
 private:
-    typename std::vector<std::list<node>*>::iterator itTable;
-    typename std::vector<std::list<node>*>::iterator itEnd;
+    typename Table::iterator itTable;
+    typename Table::iterator itEnd;
     typename std::list<node>::iterator current;
 
 
@@ -98,7 +105,7 @@ public:
 
 template<typename K, typename V, typename F>
 HashTable<K, V, F>::HashTable(uint tableSize, const F& hasher)
-    : getHashCode(hasher), table(tableSize, nullptr)
+    : getHashCode(hasher), mTable(tableSize, nullptr)
 {
     this->tableSize = tableSize;
     items = 0;
@@ -109,10 +116,26 @@ HashTable<K, V, F>::HashTable(uint tableSize, const F& hasher)
 template<typename K, typename V, typename F>
 HashTable<K, V, F>::~HashTable()
 {
-    for(std::list<node>* ptr : table)
+    clear();
+}
+
+
+
+template<typename K, typename V, typename F>
+bool HashTable<K, V, F>::containsKey(const K& key) const
+{
+    uint hashIndex = getHashCode(key, tableSize);
+    if (mTable[hashIndex] != nullptr)
     {
-        delete ptr;
+        std::list<node>* bucket = mTable[hashIndex];
+        for (node& pair : *bucket)
+        {
+            if (pair.first == key)
+                return true;
+        }
     }
+
+    return false;
 }
 
 
@@ -121,9 +144,10 @@ template<typename K, typename V, typename F>
 void HashTable<K, V, F>::put(const K& key, const V& value)
 {
     // TODO пересмотреть коэффициент
-    //    if (items / tableSize >= 2.5)
-    //    rehash();
-    if (_put(std::make_pair(key, value), table))
+   double dd = (double) items / tableSize;
+    if ((double) items / tableSize >= 2.5)
+        rehash();
+    if (_put(std::make_pair(key, value), mTable))
         items++;
 }
 
@@ -133,9 +157,10 @@ template<typename K, typename V, typename F>
 V& HashTable<K, V, F>::get(const K& key) const
 {
     uint hashIndex = getHashCode(key, tableSize);
-    if (table[hashIndex] != nullptr)
+    if (mTable[hashIndex] != nullptr)
     {
-        for (node& pair : *(table[hashIndex]))
+        std::list<node>* bucket = mTable[hashIndex];
+        for (node& pair : *bucket)
         {
             if (pair.first == key)
                 return pair.second;
@@ -146,17 +171,54 @@ V& HashTable<K, V, F>::get(const K& key) const
 }
 
 
+
+template<typename K, typename V, typename F>
+bool HashTable<K, V, F>::remove(const K& key)
+{
+    uint hashIndex = getHashCode(key, tableSize);
+    if (mTable[hashIndex] != nullptr)
+    {
+        std::list<node>* bucket = mTable[hashIndex];
+        auto iterator = bucket->begin();
+        for ( ; iterator != bucket->end(); ++iterator)
+        {
+            if (iterator->first == key)
+            {
+                bucket->erase(iterator);
+                items--;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
+template<typename K, typename V, typename F>
+void HashTable<K, V, F>::clear()
+{
+    for (int i = 0; i < tableSize; i++)
+    {
+        delete mTable[i];
+        mTable[i] = nullptr;
+    }
+    items = 0;
+}
+
+
+
 template<typename K, typename V, typename F>
 typename HashTable<K, V, F>::Iterator
 HashTable<K, V, F>::begin()
 {
-    typename std::vector<std::list<node>*>::iterator it = table.begin();
-    for ( ; it != table.end(); ++it)
+    typename Table::iterator it = mTable.begin();
+    for ( ; it != mTable.end(); ++it)
     {
         if (*it != nullptr)
         {
             uint index = getHashCode((*it)->front().first, tableSize);
-            return Iterator(it, table.end());
+            return Iterator(it, mTable.end());
         }
     }
     return end();
@@ -168,7 +230,7 @@ template<typename K, typename V, typename F>
 typename HashTable<K, V, F>::Iterator
 HashTable<K, V, F>::end()
 {
-    return Iterator(table.end());
+    return Iterator(mTable.end());
 }
 
 
@@ -179,25 +241,28 @@ template<typename K, typename V, typename F>
 void HashTable<K, V, F>::rehash()
 {
     tableSize = nextSizeOver(tableSize);
-    decltype(table) newTable(tableSize, nullptr);
+    Table newTable(tableSize, nullptr);
     items = 0;
 
-    std::for_each(table.cbegin(), table.cend(), [&](const std::list<node>* list)
+    for (auto* list : mTable)
     {
-        if (list == nullptr) return;
-        std::for_each(list->cbegin(), list->cend(), [&](const node& pair)
+        if (list == nullptr)
+            continue;
+
+        for (auto& pair : *list)
         {
             if (_put(pair, newTable))
                 items++;
-        });
-    });
+        }
+    }
 
-    for(auto* ptr : table)
+
+    for(auto* ptr : mTable)
     {
         delete ptr;
     }
-    //копируются только указатели на списки
-    table = std::vector(newTable);
+
+    mTable = std::move(newTable);
 }
 
 
@@ -234,15 +299,15 @@ uint HashTable<K, V, F>::nextSizeOver(uint size)
  * @return true если добавился новый ключ, false если перезаписал значение по существующему.
  */
 template<typename K, typename V, typename F>
-bool HashTable<K, V, F>::_put(const node& pair, std::vector<std::list<node>*>& t)
+bool HashTable<K, V, F>::_put(const node& pair, Table& t)
 {
     uint hashIndex = getHashCode(pair.first, tableSize);
-    auto* bucket = t[hashIndex];
+    std::list<node>* bucket = t[hashIndex];
 
     if (bucket == nullptr)
     {
         bucket = new std::list<node>();
-        bucket->emplace_back(pair);
+        bucket->push_back(pair);
         t[hashIndex] = bucket;
     }
     else
@@ -257,7 +322,7 @@ bool HashTable<K, V, F>::_put(const node& pair, std::vector<std::list<node>*>& t
             return false;
         }
 
-        bucket->emplace_back(pair);
+        bucket->push_back(pair);
     }
     return true;
 }

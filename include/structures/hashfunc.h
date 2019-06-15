@@ -17,11 +17,9 @@ struct Hash final
 
 
 
-// TODO у Седжвика посмортеть как реализовать
 template<>
 struct Hash<std::string> final
 {
-    // TODO арифм. переполнение исправить, есть вариант с помощью XOR, SHL, SHR.
     uint operator()(const std::string& key, uint tableSize) const
     {
         uint _hash = 0;
