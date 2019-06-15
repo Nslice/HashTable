@@ -391,50 +391,24 @@ HashTable<K, V, F>::Iterator::operator->() const
 
 
 
+//префиксный инкремент
 template<typename K, typename V, typename F>
 typename HashTable<K, V, F>::Iterator&
-HashTable<K, V, F>::Iterator::operator++(void)
+HashTable<K, V, F>::Iterator::operator++()
 {
-    if (++current == (*itTable)->end())
-    {
-        while (true)
-        {
-            ++itTable;
-            if (itTable == itEnd)
-                break;
-
-            if (*itTable != nullptr)
-            {
-                current = (*itTable)->begin();
-                break;
-            }
-        }
-    }
+    increment();
     return *this;
 }
 
 
 
+//постфиксный инкремент
 template<typename K, typename V, typename F>
-typename HashTable<K, V, F>::Iterator&
+typename HashTable<K, V, F>::Iterator
 HashTable<K, V, F>::Iterator::operator++(int)
 {
     Iterator tmp(*this);
-    if (++current == (*itTable)->end())
-    {
-        while (true)
-        {
-            ++itTable;
-            if (itTable == itEnd)
-                break;
-
-            if (*itTable != nullptr)
-            {
-                current = (*itTable)->begin();
-                break;
-            }
-        }
-    }
+    increment();
     return tmp;
 }
 
@@ -443,7 +417,7 @@ HashTable<K, V, F>::Iterator::operator++(int)
 template<typename K, typename V, typename F>
 bool HashTable<K, V, F>::Iterator::operator==(const Iterator& other) const
 {
-    return this->itTable = other.itTable;
+    return (itTable == other.itTable) && (current == other.current);
 }
 
 
@@ -451,9 +425,34 @@ bool HashTable<K, V, F>::Iterator::operator==(const Iterator& other) const
 template<typename K, typename V, typename F>
 bool HashTable<K, V, F>::Iterator::operator!=(const Iterator& other) const
 {
-    return this->itTable != other.itTable;
+    return !operator==(other);
 }
 
+
+
+template<typename K, typename V, typename F>
+void HashTable<K, V, F>::Iterator::increment()
+{
+    ++current;
+    if (current == (*itTable)->end())
+    {
+        while (itTable != itEnd)
+        {
+            ++itTable;
+
+            if (*itTable != nullptr)
+            {
+                current = (*itTable)->begin();
+                break;
+            }
+        }
+    }
+
+    if (itTable == itEnd)
+    {
+        current = dummy;
+    }
+}
 
 
 } // end of namespace "slice"
