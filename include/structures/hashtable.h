@@ -3,12 +3,9 @@
 
 #include <stdexcept>
 #include <algorithm>
-#include <iterator>
-#include <utility>
 #include <vector>
 #include <list>
 
-#include "include/log.h"
 #include "include/aliases.h"
 #include "include/structures/hashfunc.h"
 
@@ -63,12 +60,7 @@ private:
 
 
 template<typename K, typename V, typename F>
-class HashTable<K, V, F>::Iterator : public std::iterator<
-        std::input_iterator_tag,
-        node,
-        uint,
-        node*,
-        node&>
+class HashTable<K, V, F>::Iterator
 {
     friend HashTable;
 
@@ -154,7 +146,7 @@ bool HashTable<K, V, F>::containsKey(const K& key) const
 template<typename K, typename V, typename F>
 void HashTable<K, V, F>::put(const K& key, const V& value)
 {
-    // TODO пересмотреть коэффициент
+    // TODO коэффициент
     double dd = (double) items / tableSize;
     if ((double) items / tableSize >= 2.5)
         rehash();
