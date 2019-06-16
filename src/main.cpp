@@ -11,6 +11,11 @@
 #include "include/structures/hashtable.h"
 #include "include/structures/hashfunc.h"
 #include "include/log.h"
+#include "include/name_generator.h"
+
+
+//#include <boost/algorithm/string.hpp>
+
 
 
 using std::cout, std::endl, std::cin, std::string, std::vector;
@@ -18,95 +23,93 @@ using namespace slice;
 
 
 
-struct Point
+
+template<>
+struct slice::Hash<short> final
 {
-    int x, y;
+    uint operator()(short key, uint tableSize) const
+    {
+        return key % tableSize;
+    }
 };
 
-
-
-// TODO алгоритм решето Эратосфена
-void separator(vector<uint>& vec)
-{
-    for (uint j = 0; j < vec.size(); j++)
-    {
-        if (vec[j] == 0)
-            continue;
-        uint p = vec[j];
-        for (uint i = 2, n = i * p; n < vec.size(); i++)
-        {
-            n = i * p;
-            vec[n - 1] = 0;
-        }
-    }
-
-}
-
+//    std::function<uint (short, uint)> f  = [](short key, uint m) { return key % m; };
+//    HashTable<short, int, std::function<uint (short, uint)>> wow(137, f);
 
 
 int main()
 {
-    std::srand(static_cast<uint>(time(nullptr)));
+    QTextStream cin(stdin);
+    QTextStream cout(stdout);
+    cin.setCodec("CP866");
+    cout.setCodec("CP866");
 
-    //    vector<uint> series;
-    //    series.reserve(120);
 
-    //    log(series.size());
-    //    log(series.capacity());
 
-    //    series.push_back(0);
-    //    for (uint i = 2; i <= 120; i++)
-    //    {
-    //        series.push_back(i);
+    QString f1, f2, f3;
+
+    NameGenerator generator;
+
+
+    HashTable<QString, int> peoples(631);
+    QString pers;
+
+    for (int var = 0; var < 500000; ++var)
+    {
+        pers = (generator.getRandomPerson().fullname());
+        peoples.put(pers, var);
+
+        switch (var) {
+        case 123:
+            f1 = pers;
+            break;
+        case 433:
+            f2 = pers;
+            break;
+        case 56:
+            f3 = pers;
+
+        }
+    }
+
+    QElapsedTimer timer;
+    timer.start();
+
+    cout << peoples.get(f1) << endl;
+    cout << peoples.get(f2) << endl;
+    cout << peoples.get(f3) << endl;
+
+    int time = timer.elapsed();
+
+    //    int arr[] = { 3,2,432,5,345,43,5,345,34};
+    //    int* found = std::upper_bound(std::begin(arr), std::end(arr) - 1, 500);
+
+    //    std::list<int>::iterator it;
+
+    //    HashTable<string, string> table(3);
+
+    //    try {
+    //        table.put("Mike", "Pike");
+    //        table.put("Dua", "Lipa");
+    //        table.put("Meynard", "Keenan");
+    //        table.put("Meynard", "James");
+    //        table.put("BestBand", "Tool");
+    //        table.put("Bass", "Wooten");
+    //        table.put("Guitar", "Dimebag");
+    //        table.put("Vocal", "Anhelmo");
+    //        table.put("Drum", "Daney");
+    //        table.put("Xzibit", "Paparazi");
+
+
+    //        std::cout << table.get("sMike") << std::endl;
+    //        std::cout << table.get("Dua") << std::endl;
+    //    }
+    //    catch (std::exception& e) {
+    //        logger(e.what());
+    //        logger("ALARM");
     //    }
 
-    //    log("size_t" ,sizeof(size_t));
 
-
-    //    log("size ", series.size());
-    //    log("last ", series.back());
-
-    //    separator(series);
-
-
-
-    std::list<int> list;
-    cout << list.size() << endl;
-
-//    list.resize(5);
-    cout << list.size() << endl;
-
-    std::list<int>::iterator iter = list.begin();
-
-    HashTable<string, string> table(11);
-
-    try {
-        table.put("Mike", "Pike");
-        table.put("Dua", "Lipa");
-        table.put("Meynard", "Keenan");
-        log(table.get("Meynard"));
-        table.put("Meynard", "James");
-        table.rehash();
-        log(table.get("Meynard"));
-
-        std::cout << table.get("sMike") << std::endl;
-        std::cout << table.get("Dua") << std::endl;
-    }
-    catch (std::exception& e) {
-        log(e.what());
-        log("ALARM");
-    }
-
-   auto p = table.begin();
-  ++p;
-
-
-
-    int ar[] = {2,3,214,23,4,234, 2};
-    std::for_each(std::begin(ar), std::end(ar), [](int n)
-    {
-       log(_(n));
-    });
 
 
 
@@ -145,91 +148,35 @@ int main()
 
 
 
-    //1 1 2 3 5 8 13 21
+    /*          TEST
 
-    // 1 1 10 11 101 1000 1101  10101
-
-    //  (1 ^ 1)    (1 & 1)
-
-    /*
-     * int add(int i, int j)
-{
-    int uncommonBits = i ^ j;
-    int commonBits = i & j;
-
-    if (commonBits == 0)
-        return uncommonBits;
-
-    return add(uncommonBits, commonBits << 1);
-     */
+        HashTable<int, int> table(4457);
+        for (int i = 0; i < 1000000; ++i) {
+            table.put(i, i);
+        }
 
 
+        log("generated");
 
 
+        table.get(700434);
+        log("requested");
 
+        std::vector<int> vec(1000000);
+        for (int i = 0; i < 1000000; ++i) {
+            vec[i] = i;
+        }
 
-    //    HashTable<int, int> table(4457);
-    //    for (int i = 0; i < 1000000; ++i) {
-    //        table.put(i, i);
-    //    }
+        log("generated_vector");
+        for (int i = 0; i < 1000000; ++i) {
+            if (vec[i] = 700434)
+            {
+                log("YEAH found");
+                break;
+            }
+        }
+*/
 
-
-    //    log("generated");
-
-
-    //    table.get(700434);
-    //    log("requested");
-
-    //    std::vector<int> vec(1000000);
-    //    for (int i = 0; i < 1000000; ++i) {
-    //        vec[i] = i;
-    //    }
-
-    //    log("generated_vector");
-    //    for (int i = 0; i < 1000000; ++i) {
-    //        if (vec[i] = 700434)
-    //        {
-    //            log("YEAH found");
-    //            break;
-    //        }
-    //    }
-
-
+    cout << "Done.";
     return 0;
 }
-
-
-
-
-
-
-// TODO добавить лист и интерфейс
-////#ifndef ILIST_H_INCLUDED
-//#define ILIST_H_INCLUDED
-
-//#include <list>
-//#include <iostream>
-
-//template<typename T>
-//class IList
-//{
-//public:
-//    virtual ~IList(){}
-
-////    void push_back(const T& obj) = 0;
-////    void push_front(const T& obj) = 0;
-////    void pop_back() = 0;
-////    virtual void pop_front() = 0;
-//};
-
-
-//template<typename T>
-//class TempList :  public std::list<T>, public IList<T>
-//{
-//public:
-
-////    virtual ~TempList() override;
-
-//};
-
-////#endif // ILIST_H_INCLUDED

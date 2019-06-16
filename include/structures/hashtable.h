@@ -47,6 +47,8 @@ public:
     bool remove(const K& key);
     void clear();
 
+    void erase(const Iterator& iter);
+
 
     Iterator begin();
     Iterator end();
@@ -84,7 +86,7 @@ public:
     typename std::list<node>::iterator operator->() const;
 
 
-    Iterator& operator++();  //префиксный
+    Iterator& operator++();     //префиксный
     Iterator operator++(int);   //постфиксный
 
     bool operator==(const Iterator& other) const;
@@ -147,7 +149,6 @@ template<typename K, typename V, typename F>
 void HashTable<K, V, F>::put(const K& key, const V& value)
 {
     // TODO коэффициент
-    double dd = (double) items / tableSize;
     if ((double) items / tableSize >= 2.5)
         rehash();
     if (_put(std::make_pair(key, value), mTable))
@@ -207,6 +208,15 @@ void HashTable<K, V, F>::clear()
         mTable[i] = nullptr;
     }
     items = 0;
+}
+
+
+
+template<typename K, typename V, typename F>
+void HashTable<K, V, F>::erase(const Iterator& iter)
+{
+    (*iter.itTable)->erase(iter.current);
+    items--;
 }
 
 

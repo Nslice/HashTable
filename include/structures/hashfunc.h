@@ -1,6 +1,7 @@
 #ifndef HASHFUNC_H_INCLUDED
 #define HASHFUNC_H_INCLUDED
 
+#include <QString>
 #include <string>
 #include "include/aliases.h"
 
@@ -27,6 +28,23 @@ struct Hash<std::string> final
         for (size_t i = 0, length = key.length(); i < length; ++i)
         {
             _hash = (a * _hash + static_cast<uint>(key[i])) % tableSize;
+        }
+        return _hash;
+    }
+};
+
+
+
+template<>
+struct Hash<QString> final
+{
+    uint operator()(const QString& key, uint tableSize) const
+    {
+        uint _hash = 0;
+        uint a = 127;
+        for (size_t i = 0, length = key.length(); i < length; ++i)
+        {
+            _hash = (a * _hash + static_cast<uint>(key[1].unicode())) % tableSize;
         }
         return _hash;
     }

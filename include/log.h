@@ -11,6 +11,9 @@
 
 class Logger
 {
+private:
+    std::ofstream fout;  //TODO вывод в файл
+
 public:
     void operator()(const std::string& str)
     {
@@ -44,7 +47,7 @@ public:
     }
 
 
-} extern log;
+} extern logger;
 
 
 #endif // LOGGER_H_INCLUDED

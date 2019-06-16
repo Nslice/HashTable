@@ -3,19 +3,15 @@
 
 #include <cstddef>
 #include <string>
-
+#include <QtCore>
 
 
 typedef std::byte byte;
-typedef unsigned int uint;
-typedef unsigned long long ulong;
+//typedef unsigned int uint;    //conflict with Qt's aliases
+//typedef unsigned long long ulong;
 
 
-
-#define s std::string()+
-#define _(x) std::to_string(x)
-
-#define FNAME __PRETTY_FUNCTION__
+#define LNAME __PRETTY_FUNCTION__
 #define SNAME __func__
 
 
