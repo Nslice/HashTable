@@ -3,6 +3,7 @@
 
 #include <QVector>
 #include <QString>
+#include <QDate>
 #include <QRandomGenerator>
 
 
@@ -31,6 +32,8 @@ private:
 
 public:
 
+    NameGenerator() = default;
+
     Person getRandomPerson() const;
 };
 
@@ -42,7 +45,9 @@ struct Person
     QString lname;
     QString patronymic;
 
-    QString fullname() const;
+    QDate date;
+
+    QString toString() const;
 };
 
 

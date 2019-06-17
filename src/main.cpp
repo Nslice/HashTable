@@ -7,11 +7,16 @@
 #include <iterator>
 #include <vector>
 #include <map>
+#include <stdio.h>
 
 #include "include/structures/hashtable.h"
 #include "include/structures/hashfunc.h"
 #include "include/log.h"
 #include "include/name_generator.h"
+#include "include/form.h"
+
+#include <QApplication>
+#include <QStyleFactory>
 
 
 //#include <boost/algorithm/string.hpp>
@@ -37,49 +42,65 @@ struct slice::Hash<short> final
 //    HashTable<short, int, std::function<uint (short, uint)>> wow(137, f);
 
 
-int main()
+int main(int argc, char* argv[])
 {
+    QApplication app(argc, argv);
+     QApplication::setStyle(QStyleFactory::create("Fusion"));
+    Form form;
+    form.show();
+
+
+
+
     QTextStream cin(stdin);
     QTextStream cout(stdout);
     cin.setCodec("CP866");
     cout.setCodec("CP866");
 
 
-
-    QString f1, f2, f3;
-
-    NameGenerator generator;
+    cout << std::numeric_limits<int>::max() << endl;
 
 
-    HashTable<QString, int> peoples(631);
-    QString pers;
+//    HashTable<QString, int> table(631);
+//    NameGenerator generator;
 
-    for (int var = 0; var < 500000; ++var)
-    {
-        pers = (generator.getRandomPerson().fullname());
-        peoples.put(pers, var);
 
-        switch (var) {
-        case 123:
-            f1 = pers;
-            break;
-        case 433:
-            f2 = pers;
-            break;
-        case 56:
-            f3 = pers;
+//    QVector<QString> homies;
+//    for (int i = 0; i < 5; i++)
+//    {
+//        homies.append(generator.getRandomPerson().toString());
+//        table.put(homies.last(), -128);
+//    }
 
-        }
-    }
 
-    QElapsedTimer timer;
-    timer.start();
 
-    cout << peoples.get(f1) << endl;
-    cout << peoples.get(f2) << endl;
-    cout << peoples.get(f3) << endl;
+//    for (int i = 0; i < 1000000; i++)
+//    {
+//        table.put(generator.getRandomPerson().toString(), i);
+//        if (i % 20000 == 0)
+//            printf("%d\n", i);
+//    }
 
-    int time = timer.elapsed();
+//    QElapsedTimer timer;
+//    timer.start();
+
+//    cout << "GET: " << table.get(homies[0]) << endl;
+//    int time = timer.elapsed();
+//    cout << "TIME: " << time << " ms" <<  endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     //    int arr[] = { 3,2,432,5,345,43,5,345,34};
     //    int* found = std::upper_bound(std::begin(arr), std::end(arr) - 1, 500);
@@ -178,5 +199,5 @@ int main()
 */
 
     cout << "Done.";
-    return 0;
+    return app.exec();
 }

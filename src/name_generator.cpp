@@ -69,15 +69,16 @@ Person NameGenerator::getRandomPerson() const
     Person person{
         fnames.at(rand->bounded(size)),
         lnames.at(rand->bounded(size)),
-        patronymics.at(rand->bounded(size))
+        patronymics.at(rand->bounded(size)),
+        QDate(1960 + rand->bounded(50), rand->bounded(13), rand->bounded(28))
     };
     return person;
 }
 
 
 
-QString Person::fullname() const
+QString Person::toString() const
 {
-    QString fullname = fname + " " + lname + " " + patronymic;
+    QString fullname = fname + " " + lname + " " + patronymic + " " + date.toString();
     return fullname;
 }
