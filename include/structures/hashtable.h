@@ -38,6 +38,7 @@ public:
     ~HashTable();
 
     quint64 size() const { return items; }
+    quint32 sizeTable() const { return tableSize; }
     bool isEmpty() const { return items == 0; }
 
     bool containsKey(const K& key) const;
@@ -202,7 +203,7 @@ bool HashTable<K, V, F>::remove(const K& key)
 template<typename K, typename V, typename F>
 void HashTable<K, V, F>::clear()
 {
-    for (int i = 0; i < tableSize; i++)
+    for (qint32 i = 0; i < tableSize; i++)
     {
         delete mTable[i];
         mTable[i] = nullptr;

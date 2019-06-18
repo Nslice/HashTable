@@ -20,9 +20,6 @@ private:
     static QVector<QString> lnames;
     static QVector<QString> patronymics;
 
-    static QRandomGenerator* rand;
-
-
     friend struct Constructor;
     struct Constructor
     {
@@ -31,6 +28,8 @@ private:
     static Constructor ctor;
 
 public:
+    static QRandomGenerator* rand;
+
 
     NameGenerator() = default;
 
@@ -44,7 +43,6 @@ struct Person
     QString fname;
     QString lname;
     QString patronymic;
-
     QDate date;
 
     QString toString() const;
