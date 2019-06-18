@@ -20,7 +20,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QTextEdit" name="mainTextArea"/>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -49,7 +49,11 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="QLineEdit" name="numberGenerateEdit"/>
+          <widget class="QLineEdit" name="numberGenerateEdit">
+           <property name="text">
+            <string>500000</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="generateButton">

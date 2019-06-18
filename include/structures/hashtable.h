@@ -23,8 +23,8 @@ class HashTable
 private:
     const F& getHashCode;
     Table mTable;
-    uint tableSize;
-    ulong items;
+    quint32 tableSize;
+    quint64 items;
 
 
     HashTable(const HashTable&) = delete;
@@ -34,10 +34,10 @@ public:
     class Iterator;
 
 
-    explicit HashTable(uint tableSize = 127, const F& hasher = F());
+    explicit HashTable(quint32 tableSize = 127, const F& hasher = F());
     ~HashTable();
 
-    ulong size() const { return items; }
+    quint64 size() const { return items; }
     bool isEmpty() const { return items == 0; }
 
     bool containsKey(const K& key) const;
@@ -55,7 +55,7 @@ public:
 
 private:
     void rehash();
-    static uint nextSizeOver(uint size);
+    static quint32 nextSizeOver(quint32 size);
     bool _put(const node& pair, Table& t);
 };
 
@@ -110,7 +110,7 @@ private:
 
 
 template<typename K, typename V, typename F>
-HashTable<K, V, F>::HashTable(uint tableSize, const F& hasher)
+HashTable<K, V, F>::HashTable(quint32 tableSize, const F& hasher)
     : getHashCode(hasher), mTable(tableSize, nullptr)
 {
     this->tableSize = tableSize;
@@ -130,7 +130,7 @@ HashTable<K, V, F>::~HashTable()
 template<typename K, typename V, typename F>
 bool HashTable<K, V, F>::containsKey(const K& key) const
 {
-    uint hashIndex = getHashCode(key, tableSize);
+    quint32 hashIndex = getHashCode(key, tableSize);
     if (mTable[hashIndex] != nullptr)
     {
         std::list<node>* bucket = mTable[hashIndex];
@@ -160,7 +160,7 @@ void HashTable<K, V, F>::put(const K& key, const V& value)
 template<typename K, typename V, typename F>
 V& HashTable<K, V, F>::get(const K& key) const
 {
-    uint hashIndex = getHashCode(key, tableSize);
+    quint32 hashIndex = getHashCode(key, tableSize);
     if (mTable[hashIndex] != nullptr)
     {
         std::list<node>* bucket = mTable[hashIndex];
@@ -171,7 +171,7 @@ V& HashTable<K, V, F>::get(const K& key) const
         }
     }
 
-    throw std::invalid_argument("key not exsits");
+    throw std::out_of_range("key not exsits");
 }
 
 
@@ -179,7 +179,7 @@ V& HashTable<K, V, F>::get(const K& key) const
 template<typename K, typename V, typename F>
 bool HashTable<K, V, F>::remove(const K& key)
 {
-    uint hashIndex = getHashCode(key, tableSize);
+    quint32 hashIndex = getHashCode(key, tableSize);
     if (mTable[hashIndex] != nullptr)
     {
         std::list<node>* bucket = mTable[hashIndex];
@@ -202,7 +202,7 @@ bool HashTable<K, V, F>::remove(const K& key)
 template<typename K, typename V, typename F>
 void HashTable<K, V, F>::clear()
 {
-    for (uint i = 0; i < tableSize; i++)
+    for (int i = 0; i < tableSize; i++)
     {
         delete mTable[i];
         mTable[i] = nullptr;
@@ -279,9 +279,9 @@ void HashTable<K, V, F>::rehash()
 
 
 template<typename K, typename V, typename F>
-uint HashTable<K, V, F>::nextSizeOver(uint size)
+quint32 HashTable<K, V, F>::nextSizeOver(quint32 size)
 {
-    static constexpr uint prime_list[] =
+    static constexpr quint32 prime_list[] =
     {
         3, 5, 7, 11, 13, 17, 23, 29, 37, 47,
         59, 73, 97, 127, 151, 197, 251, 313, 397,
@@ -298,7 +298,7 @@ uint HashTable<K, V, F>::nextSizeOver(uint size)
         842879579, 1061961721, 1337987929, 1685759167, 2123923447,
         2675975881, 3371518343, 4247846927
     };
-    const uint* found = std::upper_bound(std::begin(prime_list), std::end(prime_list) - 1, size);
+    const quint32* found = std::upper_bound(std::begin(prime_list), std::end(prime_list) - 1, size);
     return *found;
 }
 
@@ -312,7 +312,7 @@ uint HashTable<K, V, F>::nextSizeOver(uint size)
 template<typename K, typename V, typename F>
 bool HashTable<K, V, F>::_put(const node& pair, Table& t)
 {
-    uint hashIndex = getHashCode(pair.first, tableSize);
+    quint32 hashIndex = getHashCode(pair.first, tableSize);
     std::list<node>* bucket = t[hashIndex];
 
     if (bucket == nullptr)

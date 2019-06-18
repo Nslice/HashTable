@@ -1,10 +1,11 @@
-#ifndef FORM_H
-#define FORM_H
+#ifndef FORM_H_INCLUDED
+#define FORM_H_INCLUDED
 
 #include <QWidget>
 
 #include "name_generator.h"
 #include "structures/hashtable.h"
+
 
 
 namespace Ui {
@@ -16,18 +17,18 @@ class Form : public QWidget
     Q_OBJECT
 
 private:
-    slice::NameGenerator generator;
-    slice::HashTable<QString, int> table;
+    Ui::Form* ui;
+    slice::NameGenerator mGenerator;
+    slice::HashTable<QString, int> mTable;
 
 public:
-    explicit Form(QWidget *parent = nullptr);
+    explicit Form(QWidget* parent = nullptr);
     ~Form();
 
 private slots:
     void on_generateButton_clicked();
-
-private:
-    Ui::Form *ui;
+    void on_clearButton_clicked();
+    void on_searchButton_clicked();
 };
 
-#endif // FORM_H
+#endif // FORM_H_INCLUDED

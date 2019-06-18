@@ -17,7 +17,8 @@
 
 #include <QApplication>
 #include <QStyleFactory>
-
+#include <QGridLayout>
+#include <QLabel>
 
 //#include <boost/algorithm/string.hpp>
 
@@ -50,6 +51,23 @@ int main(int argc, char* argv[])
     form.show();
 
 
+    QGridLayout lay;
+    int count = lay.count();
+
+    {
+        QLabel lbl("OJ");
+        lay.addWidget(&lbl, 0, 0, 1, 1);
+        count = lay.count();
+    }
+count = lay.count();
+    {
+        QLabel lbl("OJ");
+        lay.addWidget(&lbl, 1, 1, 1, 1);
+        count = lay.count();
+    }
+count = lay.count();
+
+
 
 
     QTextStream cin(stdin);
@@ -58,10 +76,10 @@ int main(int argc, char* argv[])
     cout.setCodec("CP866");
 
 
-    cout << std::numeric_limits<int>::max() << endl;
+//    cout << std::numeric_limits<int>::max() << endl;
 
 
-//    HashTable<QString, int> table(631);
+////    HashTable<QString, int> table(631);
 //    NameGenerator generator;
 
 
@@ -69,7 +87,6 @@ int main(int argc, char* argv[])
 //    for (int i = 0; i < 5; i++)
 //    {
 //        homies.append(generator.getRandomPerson().toString());
-//        table.put(homies.last(), -128);
 //    }
 
 

@@ -25,7 +25,7 @@ struct Hash<std::string> final
     {
         uint _hash = 0;
         uint a = 127;
-        for (size_t i = 0, length = key.length(); i < length; ++i)
+        for (uint i = 0, length = key.length(); i < length; ++i)
         {
             _hash = (a * _hash + static_cast<uint>(key[i])) % tableSize;
         }
@@ -42,9 +42,9 @@ struct Hash<QString> final
     {
         uint _hash = 0;
         uint a = 127;
-        for (size_t i = 0, length = key.length(); i < length; ++i)
+        for (uint i = 0, length = key.length(); i < length; ++i)
         {
-            _hash = (a * _hash + static_cast<uint>(key[1].unicode())) % tableSize;
+            _hash = (a * _hash + static_cast<uint>(key[i].unicode())) % tableSize;
         }
         return _hash;
     }
@@ -66,7 +66,7 @@ struct Hash<int> final
 template<>
 struct Hash<double> final
 {
-    ulong operator()(double key, uint tableSize) const
+    quint64 operator()(double key, uint tableSize) const
     {
         data.input = key;
         return ((data.output >> SHIFT) | (data.output << SHIFT)) % tableSize;
@@ -78,7 +78,7 @@ private:
     union
     {
         double input;
-        ulong output;
+        quint64 output;
     } mutable data;
 };
 
