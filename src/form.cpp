@@ -1,6 +1,7 @@
 #include <QIntValidator>
 #include <QDebug>
 
+#include "include/name_generator.h"
 #include "include/form.h"
 #include "ui_form.h"
 
@@ -167,18 +168,22 @@ void Form::GenerateThread::run()
         };
     }
 
+
+    auto* generator = slice::NameGenerator::getInstance();
+
     form->mFile.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&form->mFile);
 
     uint count = form->ui->numberGenerateEdit->text().toInt();
     uint k = count / 100;
+    k = (k == 0) ? 1 : k;
 
     int tick = 1;
 
     for (uint i = 0; i < count; i++)
     {
-        QString person = form->mGenerator.getRandomPerson().toString();
-        form->mTable.put(person, form->mGenerator.rand->bounded(-5000, 25000));
+        QString person = generator->getRandomPerson().toString();
+        form->mTable.put(person, generator->getInt(-5000, 25000));
         if (i % k == 0)
         {
             out << person << "|" << i << endl;

@@ -4,6 +4,8 @@
 #include "include/form.h"
 #include "include/structures/hashtable.h"
 #include "include/structures/hashfunc.h"
+#include "include/name_generator.h"
+
 
 using namespace slice;
 
@@ -31,10 +33,10 @@ int main(int argc, char* argv[])
     //(2 вариант написать явную специализацию slice::Hash<T> для своего типа)
     std::function<uint (const std::string&, uint)> f  = [](const std::string& str, uint m)
     { return str.length() % m; };
-    HashTable<std::string, int, std::function<uint (const std::string&, uint)>> t(137, f);
+    HashTable<std::string, int, decltype(f)> t(137, f);
     t.put("Tool", 10000);
 
-    qDebug() << "sizeof = " << sizeof(NameGenerator().getRandomPerson());
+    qDebug() << "sizeof(Person)= " << sizeof(NameGenerator::getInstance()->getRandomPerson());
 
 
     return app.exec();

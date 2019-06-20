@@ -7,19 +7,13 @@
 using slice::NameGenerator, slice::Person;
 
 
-quint32 NameGenerator::size = 0;
-QVector<QString> NameGenerator::fnames;
-QVector<QString> NameGenerator::lnames;
-QVector<QString> NameGenerator::patronymics;
-NameGenerator::Constructor NameGenerator::ctor;
-
-QRandomGenerator* NameGenerator::rand =
-        QRandomGenerator::system();
+std::unique_ptr<const NameGenerator> NameGenerator::INSTANCE = nullptr;
 
 
-
-NameGenerator::Constructor::Constructor()
+NameGenerator::NameGenerator()
 {
+    qDebug() << "NameGenerator constructor";
+    this->rand = QRandomGenerator::system();
     QFile f(":/dictionary.xml");
     if (!f.open(QIODevice::ReadOnly))
     {
@@ -56,10 +50,29 @@ NameGenerator::Constructor::Constructor()
         component = component.nextSibling().toElement();
     }
 
-    fnames = std::move(all[0]);
-    lnames = std::move(all[1]);
-    patronymics = std::move(all[2]);
-    size = std::min({fnames.size(), lnames.size(), patronymics.size()});
+    this->fnames = std::move(all[0]);
+    this->lnames = std::move(all[1]);
+    this->patronymics = std::move(all[2]);
+    this->size = std::min({fnames.size(), lnames.size(), patronymics.size()});
+}
+
+
+
+NameGenerator::~NameGenerator()
+{
+    qDebug() << "NameGenerator destructor";
+}
+
+
+
+const NameGenerator* NameGenerator::getInstance()
+{
+    if (INSTANCE == nullptr)
+    {
+        INSTANCE.reset(new NameGenerator());
+    }
+
+    return INSTANCE.get();
 }
 
 
@@ -77,8 +90,17 @@ Person NameGenerator::getRandomPerson() const
 
 
 
+int NameGenerator::getInt(int lowest, int highest) const
+{
+    return rand->bounded(lowest, highest);
+}
+
+
+
+
+
+//--------------------------struct Person------------------------
 QString Person::toString() const
 {
-    QString fullname = fname + " " + lname + " " + patronymic + " " + date.toString("dd.MM.yyyy");
-    return fullname;
+    return fname + " " + lname + " " + patronymic + " " + date.toString("dd.MM.yyyy");
 }

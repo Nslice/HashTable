@@ -6,7 +6,6 @@
 #include <QProgressBar>
 #include <QThread>
 
-#include "name_generator.h"
 #include "structures/hashtable.h"
 
 
@@ -25,7 +24,6 @@ private:
 
 
     Ui::Form* ui;
-    slice::NameGenerator mGenerator;
     slice::HashTable<QString, int> mTable;
     QFile mFile;
     QProgressBar mBar;
@@ -52,6 +50,7 @@ private slots:
 class Form::GenerateThread : public QThread
 {
    Q_OBJECT
+
 private:
     Form* form;
 

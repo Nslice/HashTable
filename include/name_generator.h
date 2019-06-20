@@ -6,6 +6,9 @@
 #include <QDate>
 #include <QRandomGenerator>
 
+#include <memory>
+
+
 
 namespace slice {
 
@@ -15,25 +18,27 @@ struct Person;
 class NameGenerator
 {
 private:
-    static quint32 size;
-    static QVector<QString> fnames;
-    static QVector<QString> lnames;
-    static QVector<QString> patronymics;
+    static std::unique_ptr<const NameGenerator> INSTANCE;
 
-    friend struct Constructor;
-    struct Constructor
-    {
-        Constructor();
-    };
-    static Constructor ctor;
+    QRandomGenerator* rand;
+    quint32 size;
+    QVector<QString> fnames;
+    QVector<QString> lnames;
+    QVector<QString> patronymics;
+
+
+    NameGenerator();
+
+    NameGenerator(const NameGenerator&) = delete;
+    NameGenerator& operator=(const NameGenerator&) = delete;
 
 public:
-    static QRandomGenerator* rand;
+    ~NameGenerator();
 
-
-    NameGenerator() = default;
+    static const NameGenerator* getInstance();
 
     Person getRandomPerson() const;
+    int getInt(int lowest, int highest) const;
 };
 
 
@@ -47,9 +52,6 @@ struct Person
 
     QString toString() const;
 };
-
-
-
 
 
 } // end of namespace "slice"
