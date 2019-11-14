@@ -37,7 +37,7 @@ public:
 
     static const NameGenerator* getInstance();
 
-    Person getRandomPerson() const;
+    Person getRandomPerson(int ageMin = 15, int ageMax = 40) const;
     int getInt(int lowest, int highest) const;
 };
 

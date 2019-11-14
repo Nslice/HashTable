@@ -77,15 +77,23 @@ const NameGenerator* NameGenerator::getInstance()
 
 
 
-Person NameGenerator::getRandomPerson() const
+Person NameGenerator::getRandomPerson(int ageMin, int ageMax) const
 {
-    Person person{
+    if (ageMax < ageMin)
+        throw std::invalid_argument("ageMax should be >= then ageMin");
+
+    int currYear = QDate::currentDate().year();
+    int lowYear = currYear - ageMax;
+    int highYear = currYear - ageMin + 1;
+
+    return Person {
         fnames.at(rand->bounded(size)),
         lnames.at(rand->bounded(size)),
         patronymics.at(rand->bounded(size)),
-        QDate(1980 + rand->bounded(25), 1 + rand->bounded(12), 1 + rand->bounded(28))
+        QDate(rand->bounded(lowYear, highYear),
+              1 + rand->bounded(12),
+              1 + rand->bounded(28))
     };
-    return person;
 }
 
 
